@@ -1,3 +1,4 @@
+
 # Usa una imagen base de Debian para instalar Apache, Perl y MariaDB
 FROM debian:latest
 
@@ -15,14 +16,16 @@ RUN mkdir -p /usr/lib/cgi-bin
 RUN chmod +x /usr/lib/cgi-bin
 
 # Copia el script Perl en el directorio CGI
-COPY basedatos.pl /usr/lib/cgi-bin/basedatos.pl
+COPY cgi-bin/basedatos.pl /usr/lib/cgi-bin/basedatos.pl
 RUN chmod +x /usr/lib/cgi-bin/basedatos.pl
 
 # Copia el archivo de configuración de Apache
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 
 # Configura MariaDB
-RUN service mysql start && \
+RUN mysqld --initialize-insecure --user=mysql && \
+    mysqld_safe --skip-networking & \
+    sleep 10 && \
     mysql -u root -e "CREATE DATABASE prueba;" && \
     mysql -u root -e "USE prueba; \
     CREATE TABLE actores (actor_id INT PRIMARY KEY AUTO_INCREMENT, nombre VARCHAR(100)); \
@@ -33,10 +36,12 @@ RUN service mysql start && \
     mysql -u root -e "USE prueba; \
     INSERT INTO actores (nombre) VALUES ('Robert Downey Jr.'), ('Scarlett Johansson'), ('Chris Hemsworth'); \
     INSERT INTO peliculas (nombre, year, vote, score) VALUES ('Avengers: Endgame', 2019, 8500, 8.4), ('Iron Man', 2008, 4000, 7.9), ('Thor', 2011, 3200, 7.0); \
-    INSERT INTO casting (pelicula_id, actor_id, papel) VALUES (1, 1, 'Iron Man'), (1, 2, 'Black Widow'), (1, 3, 'Thor'), (2, 1, 'Iron Man'), (3, 3, 'Thor');"
+    INSERT INTO casting (pelicula_id, actor_id, papel) VALUES (1, 1, 'Iron Man'), (1, 2, 'Black Widow'), (1, 3, 'Thor'), (2, 1, 'Iron Man'), (3, 3, 'Thor');" && \
+    killall mysqld
 
 # Exponer el puerto 80
 EXPOSE 80
 
 # Comando para iniciar Apache y MariaDB
 CMD service mysql start && apache2ctl -D FOREGROUND
+
