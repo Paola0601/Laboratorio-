@@ -19,6 +19,11 @@ RUN chmod +x /usr/lib/cgi-bin
 COPY cgi-bin/basedatos.pl /usr/lib/cgi-bin/basedatos.pl
 RUN chmod +x /usr/lib/cgi-bin/basedatos.pl
 
+# Copiar y ejecutar el script de inicialización
+COPY init_db.sh /init_db.sh
+RUN chmod +x /init_db.sh && /init_db.sh
+
+
 # Copia el archivo de configuración de Apache
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 
