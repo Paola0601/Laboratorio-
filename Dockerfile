@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod cgi
 
 # Copia el script Perl al directorio CGI
-COPY basedatos.pl /usr/lib/cgi-bin/basedatos.pl
+COPY cgi-bin/basedatos.pl /usr/lib/cgi-bin/basedatos.pl
 RUN chmod +x /usr/lib/cgi-bin/basedatos.pl
 
 # Copia el archivo SQL para inicialización de MariaDB
