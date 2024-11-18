@@ -3,13 +3,37 @@ use strict;
 use warnings;
 use CGI qw(:standard);
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
+
 
 print header(), start_html("Actores con ID >= 8");
 
-# Conexión a la base de datos
-my $dsn = "DBI:mysql:database=prueba;host=127.0.0.1;port=3306";
-my $dbh = DBI->connect($dsn, "root", "root_password", { RaiseError => 1 });
+# Configuración de conexión
+my $database = "prueba";
+my $hostname = "127.0.0.1";
+my $port     = 3306;
+my $user     = "root";
+my $password = "mi_contrasena_segura";  # Si configuraste una contraseña
 
+# DSN de conexión
+my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
+
+# Conectar a la base de datos
+my $dbh = DBI->connect($dsn, $user, $password, {
+    RaiseError       => 1,
+    PrintError       => 0,
+    mysql_enable_utf8 => 1,
+});
+
+if ($dbh) {
+    print "Content-type: text/html\n\n";
+    print "<h1>Conexión exitosa a la base de datos '$database'.</h1>";
+} else {
+    die "Error al conectar a la base de datos: $DBI::errstr\n";
+}
+
+# Cerrar la conexión
+$dbh->disconnect();
 # Consulta
 my $sth = $dbh->prepare("SELECT actor_id, nombre FROM actores WHERE actor_id >= 8");
 $sth->execute();

@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use CGI qw(:standard);
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
 
 print header(), start_html("Películas con puntaje > 7 y votos > 5000");
 

@@ -17,7 +17,7 @@ RUN a2enmod cgi
 
 # Copiar scripts CGI al directorio correspondiente
 COPY cgi-bin/ /usr/lib/cgi-bin/
-RUN chmod +x /usr/lib/cgi-bin/*
+RUN chmod +x /usr/lib/cgi-bin/*.pl
 
 # Copiar archivo index.html al directorio de Apache
 COPY index.html /var/www/html/index.html

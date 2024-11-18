@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use CGI qw(:standard);
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
+
 
 my $anio = param('anio');
 

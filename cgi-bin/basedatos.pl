@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
 
 # Configuración de conexión
 my $database = "prueba";

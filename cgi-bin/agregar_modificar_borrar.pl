@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use CGI qw(:standard);
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
 
 # Configuración de la base de datos
 my $dsn = "DBI:mysql:database=prueba;host=127.0.0.1;port=3306";
