@@ -1,14 +1,33 @@
-FROM perl:latest
+# Imagen base con soporte para Perl y CGI
+FROM debian:latest
 
-# Instalar módulos Perl necesarios
-RUN cpanm DBI DBD::mysql CGI
+# Instalar dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    libapache2-mod-perl2 \
+    perl \
+    mariadb-server \
+    libdbi-perl \
+    libdbd-mysql-perl \
+    curl \
+    && apt-get clean
 
-# Copiar los scripts CGI y configuraciones
-COPY cgi-bin/ /usr/local/apache2/cgi-bin/
-COPY html/ /usr/local/apache2/htdocs/
+# Habilitar CGI en Apache
+RUN a2enmod cgi
 
-# Exponer el puerto
-EXPOSE 80
+# Configurar directorio para scripts CGI
+RUN mkdir -p /usr/lib/cgi-bin
+COPY cgi-bin/ /usr/lib/cgi-bin/
+RUN chmod +x /usr/lib/cgi-bin/*
 
-# Comando para ejecutar Apache
-CMD ["httpd-foreground"]
+# Configurar directorio HTML
+COPY html/ /var/www/html/
+
+# Configurar base de datos MariaDB
+COPY init.sql /docker-entrypoint-initdb.d/init.sql
+
+# Exponer los puertos
+EXPOSE 80 3306
+
+# Iniciar Apache y MariaDB al iniciar el contenedor
+CMD service mysql start && apachectl -D FOREGROUND
