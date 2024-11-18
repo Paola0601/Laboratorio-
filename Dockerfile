@@ -15,12 +15,15 @@ RUN apt-get update && apt-get install -y \
 # Habilitar CGI en Apache
 RUN a2enmod cgi
 
-# Copiar archivos CGI al directorio correspondiente
+# Copiar scripts CGI al directorio correspondiente
 COPY cgi-bin/ /usr/lib/cgi-bin/
 RUN chmod +x /usr/lib/cgi-bin/*
 
-# Copiar el archivo index.html al directorio de Apache
+# Copiar archivo index.html al directorio de Apache
 COPY index.html /var/www/html/index.html
+
+# Copiar directorio de estilos CSS al servidor web
+COPY css/ /var/www/html/css/
 
 # Copiar archivo de inicialización de la base de datos
 COPY init.sql /docker-entrypoint-initdb.d/init.sql
@@ -33,4 +36,3 @@ EXPOSE 80 3306
 
 # Comando para iniciar MariaDB y Apache al mismo tiempo
 CMD ["sh", "-c", "mysqld & apachectl -D FOREGROUND"]
-

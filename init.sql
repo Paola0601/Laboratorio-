@@ -34,7 +34,7 @@ INSERT INTO actores (nombre) VALUES
 ('Chris Hemsworth');
 
 -- Insertar datos de ejemplo en 'peliculas'
-INSERT INTO peliculas (nombre, año, vote, score) VALUES 
+INSERT INTO peliculas (nombre, year, vote, score) VALUES 
 ('Avengers: Endgame', 2019, 8500, 8.4),
 ('Iron Man', 2008, 8000, 7.9),
 ('Thor', 2011, 3200, 7.0);
@@ -46,9 +46,3 @@ INSERT INTO casting (pelicula_id, actor_id, papel) VALUES
 (1, 3, 'Thor'),
 (2, 1, 'Iron Man'),
 (3, 3, 'Thor');
-
--- Consultar los datos para verificar
-SELECT * FROM actores;
-SELECT * FROM peliculas;
-SELECT * FROM casting;
-
