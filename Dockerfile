@@ -15,9 +15,13 @@ RUN apt-get update && apt-get install -y \
 # Habilitar CGI en Apache
 RUN a2enmod cgi
 
+# Copiar configuración personalizada de CGI
+COPY conf/cgi-bin.conf /etc/apache2/conf-available/cgi-bin.conf
+RUN a2enconf cgi-bin
+
 # Copiar scripts CGI al directorio correspondiente
 COPY cgi-bin/ /usr/lib/cgi-bin/
-RUN chmod +x /usr/lib/cgi-bin/*.pl
+RUN chmod +x /usr/lib/cgi-bin/*
 
 # Copiar archivo index.html al directorio de Apache
 COPY index.html /var/www/html/index.html
