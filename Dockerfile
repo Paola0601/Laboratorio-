@@ -41,7 +41,7 @@ RUN chmod +x /usr/lib/cgi-bin/ejercicio5.pl
 #Ejercicio5 html imagenes y css
 COPY ./ejercicio5/formulario-ej5.html /var/www/html/
 COPY ./ejercicio5/styles.css /var/www/html/css/
-COPY ./ejercicio5/fips-logo.png /var/www/html/images/
+COPY ./ejercicio5/unsa-logo.png /var/www/html/images/
 
 # Copia el archivo de configuración de Apache
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
