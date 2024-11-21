@@ -1,0 +1,11 @@
+--Agregar nuevos registros de actores para el ejercicio - Comando en la consola de mariadb2
+INSERT INTO actores (nombre) VALUES
+    ('Michael J Fox'),
+    ('Christopher Lloyd'),
+    ('Orlando Bloom'),
+    ('Johnny Depp');
+UPDATE actores SET actor_id = 6 WHERE actor_id = 14;
+UPDATE actores SET actor_id = 7 WHERE actor_id = 15;
+UPDATE actores SET actor_id = 8 WHERE actor_id = 16;
+UPDATE actores SET actor_id = 9 WHERE actor_id = 17;
+ALTER TABLE actores AUTO_INCREMENT = 10;
