@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Películas por Año</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <img src="unsa-logo.png" alt="Logo Universidad">
+    </header>
+    <main>
+        <section id="consulta-section">
+            <h1>Consulta Películas por Año</h1>
+            <form id="consulta-form">
+                <label for="year">Año de la Película:</label>
+                <input type="text" id="year" name="year" placeholder="Ingrese el año de la película" required>
+                <button type="submit">Consultar</button>
+            </form>
+            <div id="resultados">
+                <!-- Aquí se mostrarán los resultados -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Cristhian Bravo</p>
+    </footer>
+
+    <script>
+        document.getElementById('consulta-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const year = document.getElementById('year').value;
+
+            const url = `/cgi-bin/ejercicio5.pl?year=${encodeURIComponent(year)}`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    // Insertamos directamente el contenido recibido en #resultados sin procesarlo
+                    document.getElementById('resultados').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error en la consulta:', error);
+                    document.getElementById('resultados').innerText = 'Hubo un error en la consulta.';
+                });
+        });
+
+    </script>
+</body>
+
+</html>
