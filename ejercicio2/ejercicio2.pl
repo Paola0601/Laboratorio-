@@ -7,8 +7,8 @@ use DBI;
 my $database = "prueba";
 my $hostname = "mariadb2";
 my $port     = 3306; 
-my $username = "cgi_user";
-my $password = "tu_password";
+my $username = "paola";
+my $password = "soyunarata";
 
 # DSN de conexión
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";

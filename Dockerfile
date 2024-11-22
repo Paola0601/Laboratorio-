@@ -1,56 +1,38 @@
-# Usa una imagen base de Ubuntu 20.04
-FROM ubuntu:20.04
 
-# Configuración de entorno para evitar prompts interactivos
-ENV DEBIAN_FRONTEND=noninteractive
+# Usa una imagen base de Debian para instalar Apache, Perl y MariaDB
+FROM debian:latest
 
-# Instala Apache, Perl, MariaDB y módulos necesarios
+# Actualiza e instala los paquetes necesarios
 RUN apt-get update && \
-    apt-get install -y apache2 libapache2-mod-perl2 perl mariadb-server \
-    libdbi-perl libdbd-mysql-perl && \
-    apt-get clean && \
-    echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
-    a2enmod cgi
+    apt-get install -y apache2 libapache2-mod-perl2 perl mariadb-server dos2unix \
+    libdbi-perl libdbd-mysql-perl vim && \
+    apt-get clean
 
-# Crear directorios necesarios y asignar permisos
-RUN mkdir -p /var/www/html/css /var/www/html/images /usr/lib/cgi-bin && \
-    chmod -R 755 /var/www/html && \
-    chmod +x /usr/lib/cgi-bin
+# Habilita el módulo CGI de Apache
+RUN a2dismod mpm_event mpm_worker cgid && \
+    a2enmod mpm_prefork cgi
 
-# Copia los scripts Perl al directorio CGI
-COPY basedatos.pl /usr/lib/cgi-bin/basedatos.pl
-COPY ejercicio2/ejercicio2.pl /usr/lib/cgi-bin/ejercicio2.pl
-COPY ejercicio3/ejercicio3.pl /usr/lib/cgi-bin/ejercicio3.pl
-COPY ejercicio4/ejercicio4.pl /usr/lib/cgi-bin/ejercicio4.pl
-COPY ejercicio5/formulario-ej5.html /var/www/html/index.html
+# Copia los scripts Perl
+RUN mkdir -p /usr/lib/cgi-bin/
+COPY cgi-bin/ /usr/lib/cgi-bin/
 
-RUN chmod +x /usr/lib/cgi-bin/*.pl
+# Crear directorio para HTML
+RUN mkdir -p /var/www/html
+RUN chmod -R 755 /var/www/html
 
-# Copia los archivos HTML, CSS e imágenes
-COPY ejercicio5/formulario-ej5.html /var/www/html/
-COPY ejercicio5/styles.css /var/www/html/css/
-COPY ejercicio5/unsa-logo.png /var/www/html/images/
+# Asegurar permisos correctos para los scripts CGI
+RUN chmod 755 /usr/lib/cgi-bin/*.pl && \
+    chown -R www-data:www-data /usr/lib/cgi-bin/ && \
+    dos2unix /usr/lib/cgi-bin/*.pl
+
+# Copia todos los archivos del proyecto al directorio de Apache
+COPY . /var/www/html/
 
 # Copia el archivo de configuración de Apache
 COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Configura MariaDB y prepara la base de datos
-RUN service mysql start && \
-    mysql -u root -e "CREATE DATABASE prueba;" && \
-    mysql -u root -e "USE prueba; \
-        CREATE TABLE actores (actor_id INT PRIMARY KEY AUTO_INCREMENT, nombre VARCHAR(100)); \
-        CREATE TABLE peliculas (pelicula_id INT PRIMARY KEY AUTO_INCREMENT, nombre VARCHAR(100), year INT, vote INT, score DECIMAL(3,1)); \
-        CREATE TABLE casting (casting_id INT PRIMARY KEY AUTO_INCREMENT, pelicula_id INT, actor_id INT, papel VARCHAR(100), \
-            FOREIGN KEY (pelicula_id) REFERENCES peliculas(pelicula_id) ON DELETE CASCADE, \
-            FOREIGN KEY (actor_id) REFERENCES actores(actor_id) ON DELETE CASCADE);" && \
-    mysql -u root -e "USE prueba; \
-        INSERT INTO actores (nombre) VALUES ('Robert Downey Jr.'), ('Scarlett Johansson'), ('Chris Hemsworth'); \
-        INSERT INTO peliculas (nombre, year, vote, score) VALUES ('Avengers: Endgame', 2019, 8500, 8.4), ('Iron Man', 2008, 4000, 7.9), ('Thor', 2011, 3200, 7.0); \
-        INSERT INTO casting (pelicula_id, actor_id, papel) VALUES (1, 1, 'Iron Man'), (1, 2, 'Black Widow'), (1, 3, 'Thor'), (2, 1, 'Iron Man'), (3, 3, 'Thor');"
-
 # Exponer el puerto 80
 EXPOSE 80
 
-# Comando para iniciar Apache y MariaDB
-CMD ["sh", "-c", "mysqld_safe & apache2ctl -D FOREGROUND"]
-
+# Comando para iniciar MariaDB y Apache en formato JSON (exec)
+CMD ["bash", "-c", "mysqld_safe & apache2ctl -D FOREGROUND"]
