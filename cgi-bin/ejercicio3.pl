@@ -4,50 +4,34 @@ use warnings;
 use CGI;
 use DBI;
 
-# Creamos el CGI
+# Crear el objeto CGI
 my $q = CGI->new;
 print $q->header('text/html; charset=UTF-8');
 
-# Configuración de conexión con la base de datos
-my $database = "prueba";
-my $hostname = "baseDeDatos"; # nombre del contenedor
-my $port     = 3306;
-my $user     = "paola";
-my $password = "adamari";
+# Conexión a la base de datos
+my $dbh = DBI->connect(
+    "DBI:mysql:prueba:host=baseDeDatos;port=3306", 
+    "paola", 
+    "adamari", 
+    { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 }
+) or die "Error al conectar a la base de datos: $DBI::errstr";
 
-# DSN de conexión
-my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
+# Ejecutar la consulta
+my $sth = $dbh->prepare("SELECT id, nombre, año, votos, score FROM peliculas WHERE score > 7 AND vote > 5000");
+$sth->execute();
 
-# Conectar a la base de datos
-my $dbh = DBI->connect($dsn, $user, $password, {
-    RaiseError       => 1,
-    PrintError       => 0,
-    mysql_enable_utf8 => 1,
-}) or die "<h1>Error al conectar a la base de datos: $DBI::errstr</h1>";
-
-# Consulta del ejercicio
-my $score = 7;
-my $votes = 5000;
-my $query = "SELECT * FROM peliculas WHERE score > ? and vote > ?";
-my $sth = $dbh->prepare($query);
-$sth->execute($score, $votes);
-
-# Ponemos los resultados en una variable para luego imprimirlos
-my $resultados = "";
+# Construir las filas de la tabla
+my $tabla = "";
 while (my @fila = $sth->fetchrow_array) {
-    $resultados .= "<tr>\n";
-    foreach my $dato (@fila) {
-        $resultados .= "<td>$dato</td>\n";
-    }
-    $resultados .= "</tr>\n";
+    $tabla .= "<tr><td>" . join("</td><td>", @fila) . "</td></tr>";
 }
 
 # Cerrar la conexión
-$sth->finish();
-$dbh->disconnect();
+$sth->finish;
+$dbh->disconnect;
 
-# Imprimimos el HTML
-print<<'HTML';
+# Generar el HTML
+print <<HTML;
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,35 +47,26 @@ print<<'HTML';
             <nav>
                 <a href="ejercicio2.pl" class="nav-link">Actor de ID 5</a>
                 <a href="ejercicio3.pl" class="nav-link">Actores con ID >= 8</a>
-                <a href="tercero.pl" class="nav-link">Películas con puntaje mayor a 7 y más de 5000 votos</a>
+                <a href="ejercicio4.pl" class="nav-link">Películas con puntaje mayor a 7 y más de 5000 votos</a>
             </nav>
         </div>
         <div class="main-content">
-            <header>
-                <h1>Resultados de la Consulta</h1>
-            </header>
-            <main>
-                <h3>Películas con puntaje mayor a 7 y más de 5000 votos</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Año</th>
-                            <th>Votos</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-HTML
-
-print $resultados;
-
-print<<'HTML';
-                    </tbody>
-                </table>
-                <a class="volver" href="../index.html">Volver al índice</a>
-            </main>
+            <h1>Películas con puntaje > 7 y votos > 5000</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Año</th>
+                        <th>Votos</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $tabla
+                </tbody>
+            </table>
+            <a class="volver" href="../index.html">Volver al índice</a>
         </div>
     </div>
 </body>
