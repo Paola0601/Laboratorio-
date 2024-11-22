@@ -1,141 +1,81 @@
--- Querys nuevos para el ejercicio 1 - mariadb2
-
 -- Agregar nuevos registros
--- Insertar nuevos actores
-INSERT INTO actores (nombre) VALUES 
-('Cillian Murphy'),
-('Christian Bale');
+-- Inserción de actores
+INSERT INTO actores (nombre) 
+VALUES ('Cillian Murphy'), ('Christian Bale'), ('Emily Blunt');
 
--- Insertar nuevas películas
-INSERT INTO peliculas (nombre, year, vote, score) VALUES 
-('Batman Begins', 2008, 4500, 8.2),
-('Oppenheimer', 2023, 12000, 8.7);
+-- Inserción de películas
+INSERT INTO peliculas (nombre, year, vote, score) 
+VALUES ('The Dark Knight', 2008, 9000, 9.0), 
+       ('Interstellar', 2014, 7000, 8.6),
+       ('A Quiet Place Part II', 2020, 5000, 7.9);
 
--- Relacionar actores con las nuevas películas
-INSERT INTO casting (pelicula_id, actor_id, papel) VALUES 
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Batman Begins'), 
- (SELECT actor_id FROM actores WHERE nombre = 'Cillian Murphy'), 'Dr. Jonathan Crane'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Batman Begins'), 
- (SELECT actor_id FROM actores WHERE nombre = 'Christian Bale'), 'Bruce Wayne'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Oppenheimer'), 
- (SELECT actor_id FROM actores WHERE nombre = 'Cillian Murphy'), 'J. Robert Oppenheimer'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Oppenheimer'), 
- (SELECT actor_id FROM actores WHERE nombre = 'Robert Downey Jr.'), 'Lewis Strauss');
-
--- Borrar registros Scarlett Johansson
-DELETE FROM casting 
-WHERE actor_id = (SELECT actor_id FROM actores WHERE nombre = 'Scarlett Johansson');
-
-DELETE FROM actores 
-WHERE nombre = 'Scarlett Johansson';
-
--- Eliminar a un repetido y arreglar ids
--- 1. Eliminar el duplicado de Robert Downey Jr.
-DELETE FROM actores WHERE actor_id = 9;
-
--- 2. Renumerar los actor_id en la tabla actores
-SET @new_id = 0;
-UPDATE actores
-SET actor_id = (@new_id := @new_id + 1);
-
--- 3. Ajustar la tabla casting con los nuevos actor_id
-UPDATE casting c
-JOIN actores a ON c.actor_id = a.actor_id
-SET c.actor_id = a.actor_id;
-
--- 4. Verificar los cambios
-SELECT * FROM actores;
-SELECT * FROM casting;
-
--- Ajustar ids peliculas
--- Renumerar los pelicula_id en la tabla peliculas
-SET @new_pelicula_id = 0;
-UPDATE peliculas
-SET pelicula_id = (@new_pelicula_id := @new_pelicula_id + 1);
-
--- Ajustar la tabla casting con los nuevos pelicula_id
-UPDATE casting c
-JOIN peliculas p ON c.pelicula_id = p.pelicula_id
-SET c.pelicula_id = p.pelicula_id;
-
--- Verificar los cambios
-SELECT * FROM peliculas;
-SELECT * FROM casting;
-
--- Modificar registros existentes
-UPDATE casting 
-SET pelicula_id = (SELECT pelicula_id FROM peliculas WHERE nombre = 'Oppenheimer')
-WHERE actor_id = (SELECT actor_id FROM actores WHERE nombre = 'Robert Downey Jr.')
-  AND papel = 'Iron Man';
-
-UPDATE peliculas 
-SET nombre = 'Thor: Love and Thunder', year = 2022, vote = 4300, score = 6.4
-WHERE nombre = 'Thor';
-
--- Relacionar a Christian Bale con "Thor: Love and Thunder"
-INSERT INTO casting (pelicula_id, actor_id, papel) VALUES 
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Thor: Love and Thunder'), 
- (SELECT actor_id FROM actores WHERE nombre = 'Christian Bale'), 'Gorr the God Butcher');
-
--- Debido a errores se elimina la tabla casting y se reintroducen los nuevos registros
-DELETE FROM casting;
-
--- Relacionar actores y películas correctamente
-INSERT INTO casting (pelicula_id, actor_id, papel) VALUES
--- Avengers: Endgame
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Avengers: Endgame'),
- (SELECT actor_id FROM actores WHERE nombre = 'Robert Downey Jr.'), 'Iron Man'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Avengers: Endgame'),
- (SELECT actor_id FROM actores WHERE nombre = 'Chris Hemsworth'), 'Thor'),
-
--- Iron Man
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Iron Man'),
- (SELECT actor_id FROM actores WHERE nombre = 'Robert Downey Jr.'), 'Iron Man'),
-
--- Thor: Love and Thunder
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Thor: Love and Thunder'),
- (SELECT actor_id FROM actores WHERE nombre = 'Chris Hemsworth'), 'Thor'),
-
--- Batman Begins
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Batman Begins'),
- (SELECT actor_id FROM actores WHERE nombre = 'Christian Bale'), 'Bruce Wayne'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Batman Begins'),
- (SELECT actor_id FROM actores WHERE nombre = 'Cillian Murphy'), 'Dr. Jonathan Crane'),
-
--- Oppenheimer
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Oppenheimer'),
- (SELECT actor_id FROM actores WHERE nombre = 'Cillian Murphy'), 'J. Robert Oppenheimer'),
-((SELECT pelicula_id FROM peliculas WHERE nombre = 'Oppenheimer'),
- (SELECT actor_id FROM actores WHERE nombre = 'Robert Downey Jr.'), 'Lewis Strauss');
-
--- Reiniciar los ids de casting
--- 1. Crear una copia temporal de la tabla casting
-CREATE TEMPORARY TABLE temp_casting AS SELECT * FROM casting;
-
--- 2. Eliminar la tabla casting original
-DROP TABLE casting;
-
--- 3. Volver a crear la tabla casting
-CREATE TABLE casting (
-    casting_id INT PRIMARY KEY AUTO_INCREMENT,
-    pelicula_id INT,
-    actor_id INT,
-    papel VARCHAR(100),
-    FOREIGN KEY (pelicula_id) REFERENCES peliculas(pelicula_id) ON DELETE CASCADE,
-    FOREIGN KEY (actor_id) REFERENCES actores(actor_id) ON DELETE CASCADE
-);
-
--- 4. Insertar los datos de la tabla temporal en la nueva tabla casting
+-- Asociar actores con las películas
 INSERT INTO casting (pelicula_id, actor_id, papel)
-SELECT pelicula_id, actor_id, papel FROM temp_casting;
+VALUES 
+((SELECT pelicula_id FROM peliculas WHERE nombre = 'The Dark Knight'),
+ (SELECT actor_id FROM actores WHERE nombre = 'Christian Bale'), 'Bruce Wayne'),
+((SELECT pelicula_id FROM peliculas WHERE nombre = 'Interstellar'),
+ (SELECT actor_id FROM actores WHERE nombre = 'Cillian Murphy'), 'Dr. Mann'),
+((SELECT pelicula_id FROM peliculas WHERE nombre = 'A Quiet Place Part II'),
+ (SELECT actor_id FROM actores WHERE nombre = 'Emily Blunt'), 'Evelyn Abbott');
 
--- 5. Eliminar la tabla temporal
-DROP TABLE temp_casting;
+-- Eliminar registros
+-- Eliminar registros de actores no relacionados
+DELETE FROM actores 
+WHERE nombre IN ('Scarlett Johansson', 'Duplicate Actor');
 
--- 6. Verificar los resultados
-SELECT * FROM casting;
+-- Actualizar datos existentes
+-- Modificar información de películas
+UPDATE peliculas
+SET vote = 15000, score = 9.5
+WHERE nombre = 'The Dark Knight';
 
---Cambiando un actor repetido 
+-- Cambiar el nombre de un actor repetido
 UPDATE actores
 SET nombre = 'Liam Hemsworth'
-WHERE actor_id = 3;
+WHERE actor_id IN (SELECT actor_id FROM actores WHERE nombre = 'Chris Hemsworth');
+
+-- Renumerar IDs de actores
+-- Paso 1: Crear una tabla temporal para mantener el orden nuevo
+CREATE TEMPORARY TABLE temp_actores AS 
+SELECT actor_id AS old_id, nombre, @new_actor_id := @new_actor_id + 1 AS new_id
+FROM actores, (SELECT @new_actor_id := 0) AS t;
+
+-- Paso 2: Actualizar la tabla `actores` con los nuevos IDs
+UPDATE actores a
+JOIN temp_actores t ON a.actor_id = t.old_id
+SET a.actor_id = t.new_id;
+
+-- Paso 3: Actualizar la tabla `casting` con los nuevos actor_id
+UPDATE casting c
+JOIN temp_actores t ON c.actor_id = t.old_id
+SET c.actor_id = t.new_id;
+
+-- Renumerar IDs de películas
+-- Paso 1: Crear una tabla temporal para los IDs de películas
+CREATE TEMPORARY TABLE temp_peliculas AS 
+SELECT pelicula_id AS old_id, nombre, @new_movie_id := @new_movie_id + 1 AS new_id
+FROM peliculas, (SELECT @new_movie_id := 0) AS t;
+
+-- Paso 2: Actualizar la tabla `peliculas` con los nuevos IDs
+UPDATE peliculas p
+JOIN temp_peliculas t ON p.pelicula_id = t.old_id
+SET p.pelicula_id = t.new_id;
+
+-- Paso 3: Actualizar la tabla `casting` con los nuevos pelicula_id
+UPDATE casting c
+JOIN temp_peliculas t ON c.pelicula_id = t.old_id
+SET c.pelicula_id = t.new_id;
+
+-- Verificar los resultados
+SELECT * FROM actores ORDER BY actor_id;
+SELECT * FROM peliculas ORDER BY pelicula_id;
+SELECT * FROM casting ORDER BY casting_id;
+
+-- Agregar nuevas relaciones
+INSERT INTO casting (pelicula_id, actor_id, papel) 
+VALUES 
+((SELECT pelicula_id FROM peliculas WHERE nombre = 'Interstellar'),
+ (SELECT actor_id FROM actores WHERE nombre = 'Matthew McConaughey'), 'Cooper'),
+((SELECT pelicula_id FROM peliculas WHERE nombre = 'The Dark Knight'),
+ (SELECT actor_id FROM actores WHERE nombre = 'Heath Ledger'), 'Joker');

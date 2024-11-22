@@ -1,36 +1,38 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 use strict;
 use warnings;
 use CGI;
 use DBI;
+use CGI::Carp 'fatalsToBrowser';
 
 # Crear el objeto CGI
 my $cgi = CGI->new;
+print $cgi->header('text/html; charset=UTF-8');
 
-# Obtener el año del formulario
-my $year = $cgi->param('year') || '';
+# Obtener el año enviado por el formulario
+my $year = $cgi->param('year');
+
+# Validar que se haya proporcionado un año
+if (!$year) {
+    print "<h1>Error: No se proporcionó un año en el formulario.</h1>";
+    exit;
+}
 
 # Configuración de conexión a la base de datos
 my $database = "prueba";
-my $hostname = "mariadb2";
+my $hostname = "informacion";
 my $port     = 3306;
-my $username = "paola";
+my $user     = "paola";
 my $password = "adamari";
 
 # DSN de conexión
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
 
 # Conectar a la base de datos
-my $dbh = DBI->connect($dsn, $username, $password, { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 });
+my $dbh = DBI->connect($dsn, $user, $password, { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 })
+    or die "Content-type: text/html\n\n<h1>Error al conectar a la base de datos: $DBI::errstr</h1>";
 
-# Validar conexión
-if (!$dbh) {
-    print $cgi->header(-type => "text/html", -charset => "UTF-8");
-    print "<h1>Error al conectar a la base de datos: $DBI::errstr</h1>";
-    exit;
-}
-
-# Consulta SQL
+# Consulta SQL para obtener películas y actores del año dado
 my $sql = q{
     SELECT p.nombre AS pelicula, a.nombre AS actor
     FROM peliculas p
@@ -44,16 +46,18 @@ my $sql = q{
 my $sth = $dbh->prepare($sql);
 $sth->execute($year);
 
-# Generar la tabla HTML con los resultados
-my $resultados = "";
+# Generar el HTML de los resultados
+my $output = "";
 my $current_movie = "";
 my @actors = ();
 
 while (my $row = $sth->fetchrow_hashref) {
     if ($row->{pelicula} ne $current_movie) {
+        # Si no es la primera película, imprimir los actores acumulados
         if ($current_movie ne "") {
-            $resultados .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
+            $output .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
         }
+        # Actualizar la película actual y reiniciar la lista de actores
         $current_movie = $row->{pelicula};
         @actors = ($row->{actor});
     } else {
@@ -61,48 +65,55 @@ while (my $row = $sth->fetchrow_hashref) {
     }
 }
 
+# Agregar la última película al resultado
 if ($current_movie ne "") {
-    $resultados .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
+    $output .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
 }
 
-# Cerrar conexión a la base de datos
-$sth->finish();
-$dbh->disconnect();
+# Si no hay resultados
+if ($output eq "") {
+    $output = "<tr><td colspan='2'>No se encontraron películas para el año $year.</td></tr>";
+}
 
-# Imprimir el HTML
-print $cgi->header(-type => "text/html", -charset => "UTF-8");
+# Cerrar la conexión
+$sth->finish;
+$dbh->disconnect;
+
+# Generar la página HTML
 print <<HTML;
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Películas del Año $year</title>
-    <link rel="stylesheet" href="../estilos.css">
+    <link rel="stylesheet" type="text/css" href="../estilos.css">
+    <link rel="icon" type="image/png" href="../imagenes/escudo-unsa.png">
+    <title>Películas del año $year</title>
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
+        <div class="menu">
             <nav>
-                <a href="primer.pl">Actor de ID 5</a>
-                <a href="segundo.pl">Actores con ID >= 8</a>
-                <a href="tercero.pl">Películas con puntaje > 7 y votos > 5000</a>
+                <a href="ejercicio2.pl">Actor de ID 5</a>
+                <a href="ejercicio3.pl">Actores con ID >= 8</a>
+                <a href="ejercicio4.pl">Películas con puntaje > 7 y más de 5000 votos</a>
                 <a href="../index.html">Volver al índice</a>
             </nav>
         </div>
         <div class="main-content">
-            <h1>Películas del Año $year</h1>
+            <h1>Películas y Actores del Año $year</h1>
             <table>
                 <thead>
                     <tr>
                         <th>Película</th>
-                        <th>Actor(es)</th>
+                        <th>Actores</th>
                     </tr>
                 </thead>
                 <tbody>
-                    $resultados
+                    $output
                 </tbody>
             </table>
+            <a class="volver" href="../index.html">Volver al índice</a>
         </div>
     </div>
 </body>
