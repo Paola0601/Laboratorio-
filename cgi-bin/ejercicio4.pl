@@ -57,13 +57,6 @@ print <<HTML;
 </head>
 <body>
     <div class="container">
-        <div class="menu">
-            <nav>
-                <a href="ejercicio2.pl" class="nav-link">Actor de ID 5</a>
-                <a href="ejercicio3.pl" class="nav-link">Actores con ID >= 8</a>
-                <a href="ejercicio4.pl" class="nav-link">Películas con puntaje mayor a 7 y más de 5000 votos</a>
-            </nav>
-        </div>
         <div class="main-content">
             <h1>Películas con puntaje > 7 y más de 5000 votos</h1>
             <table>

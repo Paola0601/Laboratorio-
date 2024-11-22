@@ -5,7 +5,7 @@ use CGI;
 use DBI;
 use CGI::Carp 'fatalsToBrowser';
 
-
+#Creo mi cgi
 my $cgi = CGI->new;
 print $cgi->header('text/html; charset=UTF-8');
 
@@ -53,13 +53,7 @@ print <<HTML;
         <h1>¡Bienvenido a la base de datos!</h1>
     </header>
     <div class="container">
-        <div class="menu">
-            <nav>
-                <a href="./ejercicio2.pl" class="nav-link">Actor de ID 5</a>
-                <a href="./ejercicio3.pl" class="nav-link">Actores con ID >= 8</a>
-                <a href="./ejercicio4.pl" class="nav-link">Películas con puntaje mayor a 7 y más de 5000 votos</a>
-            </nav>
-        </div>
+
         <div class="main-content">
             <h2>Resultados de la consulta</h2>
 HTML

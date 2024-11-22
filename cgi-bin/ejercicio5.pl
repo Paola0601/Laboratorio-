@@ -92,16 +92,8 @@ print <<HTML;
 </head>
 <body>
     <div class="container">
-        <div class="menu">
-            <nav>
-                <a href="ejercicio2.pl">Actor de ID 5</a>
-                <a href="ejercicio3.pl">Actores con ID >= 8</a>
-                <a href="ejercicio4.pl">Películas con puntaje > 7 y más de 5000 votos</a>
-                <a href="../index.html">Volver al índice</a>
-            </nav>
-        </div>
         <div class="main-content">
-            <h1>Películas y Actores del Año $year</h1>
+            <h1>Películas y Actores del Año</h1>
             <table>
                 <thead>
                     <tr>
