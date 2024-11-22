@@ -5,25 +5,20 @@ use DBI;
 
 # Configuración de conexión
 my $database = "prueba";
-my $hostname = "mariadb2";              
-my $port     = 3306;  # Usa 3306 o 3307 
-my $username = "cgi_user";  # Nombre de usuario actualizado
-my $password = "tu_password";  # Contraseña actualizada
+my $hostname = "mariadb2";
+my $port     = 3306;
+my $username = "paola";
+my $password = "adamari";
 
 # DSN de conexión
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
 
 # Conectar a la base de datos
-my $dbh = DBI->connect($dsn, $username, $password, {
-    RaiseError       => 1,
-    PrintError       => 0,
-    mysql_enable_utf8 => 1,
-});
+my $dbh = DBI->connect($dsn, $username, $password, { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 });
 
 # Validar conexión
 if ($dbh) {
-    print "Content-type: text/html\n\n";  # Declara la pagina web
-    print "<h1>Conexión exitosa a la base de datos '$database'.</h1>\n";
+    print "Content-type: text/html\n\n";  # Declara la página web
 } else {
     die "Content-type: text/html\n\nError al conectar a la base de datos: $DBI::errstr\n";
 }
@@ -38,7 +33,7 @@ my $sql = q{
 my $sth = $dbh->prepare($sql);
 $sth->execute();
 
-# Generar la tabla HTML con los resultados
+# Generar el HTML con navegación y tabla
 print <<'HTML';
 <!DOCTYPE html>
 <html lang="es">
@@ -46,49 +41,34 @@ print <<'HTML';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Películas con Puntaje Mayor a 7 y Más de 5000 Votos</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-        }
-
-        table {
-            width: 80%;
-            border-collapse: collapse;
-            margin: 20px auto;
-            background-color: black; 
-        }
-
-        th, td {
-            border: 1px solid white; 
-            padding: 8px;
-            text-align: left;
-            color: white; 
-        }
-
-        th {
-            background-color: #333;
-        }
-
-        tr {
-            background-color: black; 
-        }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="../estilos.css">
 </head>
 <body>
-    <h1 style="text-align: center;">Películas con Puntaje Mayor a 7 y Más de 5000 Votos</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Año</th>
-            <th>Votos</th>
-            <th>Puntaje</th>
-        </tr>
+    <div class="container">
+        <div class="sidebar">
+            <nav>
+                <a href="ejercicio2.pl">Actor de ID 5</a>
+                <a href="ejercicio3.pl">Actores con ID >= 8</a>
+                <a href="ejercicio4.pl">Películas con puntaje mayor a 7 y más de 5000 votos</a>
+                <a href="../index.html">Volver al índice</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <h1>Películas con Puntaje Mayor a 7 y Más de 5000 Votos</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Año</th>
+                        <th>Votos</th>
+                        <th>Puntaje</th>
+                    </tr>
+                </thead>
+                <tbody>
 HTML
 
-# Imprimir la tabla por filas
+# Imprimir las filas de la tabla
 while (my $row = $sth->fetchrow_hashref) {
     print "<tr>";
     print "<td>$row->{pelicula_id}</td>";
@@ -99,9 +79,12 @@ while (my $row = $sth->fetchrow_hashref) {
     print "</tr>";
 }
 
-# Cerrar tabla y html
+# Cerrar el contenido HTML
 print <<'HTML';
-    </table>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
 HTML

@@ -8,13 +8,18 @@ use DBI;
 my $q = CGI->new;
 print $q->header('text/html; charset=UTF-8');
 
-# Conexión a la base de datos
-my $dbh = DBI->connect(
-    "DBI:mysql:prueba:host=baseDeDatos;port=3306", 
-    "paola", 
-    "adamari", 
-    { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 }
-) or die "Error al conectar a la base de datos: $DBI::errstr";
+# Configuración de conexión
+my $database = "prueba";
+my $hostname = "mariadb2";
+my $port     = 3306;
+my $username = "paola";
+my $password = "adamari";
+
+# DSN de conexión
+my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
+
+# Conectar a la base de datos
+my $dbh = DBI->connect($dsn, $username, $password, { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 });
 
 # Ejecutar la consulta
 my $sth = $dbh->prepare("SELECT id, nombre, año, votos, score FROM peliculas WHERE score > 7 AND vote > 5000");
