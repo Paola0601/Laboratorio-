@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
-use DBI;
 use CGI;
+use DBI;
 
 # Crear el objeto CGI
 my $cgi = CGI->new;
@@ -14,18 +14,14 @@ my $year = $cgi->param('year') || '';
 my $database = "prueba";
 my $hostname = "mariadb2";
 my $port     = 3306;
-my $username = "cgi_user";  
-my $password = "tu_password";  
+my $username = "paola";
+my $password = "adamari";
 
 # DSN de conexión
 my $dsn = "DBI:mysql:database=$database;host=$hostname;port=$port";
 
 # Conectar a la base de datos
-my $dbh = DBI->connect($dsn, $username, $password, {
-    RaiseError       => 1,
-    PrintError       => 0,
-    mysql_enable_utf8 => 1,
-});
+my $dbh = DBI->connect($dsn, $username, $password, { RaiseError => 1, PrintError => 0, mysql_enable_utf8 => 1 });
 
 # Validar conexión
 if (!$dbh) {
@@ -34,7 +30,7 @@ if (!$dbh) {
     exit;
 }
 
-# Consulta de las películas y actores del año dado, agrupados por película
+# Consulta SQL
 my $sql = q{
     SELECT p.nombre AS pelicula, a.nombre AS actor
     FROM peliculas p
@@ -48,38 +44,67 @@ my $sql = q{
 my $sth = $dbh->prepare($sql);
 $sth->execute($year);
 
-# CREAMOS UNA VARIABLE PARA ALMACENAR EL HTML DE LOS RESULTADOS
-my $output = "";
+# Generar la tabla HTML con los resultados
+my $resultados = "";
 my $current_movie = "";
 my @actors = ();
 
-# ITERAMOS SOBRE LOS RESULTADOS OBTENIDOS DE LA BASE DE DATOS
 while (my $row = $sth->fetchrow_hashref) {
-    # SI CAMBIA LA PELÍCULA, IMPRIMIMOS LA PELÍCULA Y LOS ACTORES ASOCIADOS
     if ($row->{pelicula} ne $current_movie) {
-        # SI NO ES LA PRIMERA VEZ, IMPRIMIMOS LOS ACTORES ANTERIORES
         if ($current_movie ne "") {
-            # EVITAMOS CREADOS Celdas VACÍAS EN LA TABLA
-            $output .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
+            $resultados .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
         }
-
-        # ACTUALIZAMOS LA PELÍCULA Y REINICIAMOS LA LISTA DE ACTORES
         $current_movie = $row->{pelicula};
-        @actors = ($row->{actor});  # AGREGAMOS EL PRIMER ACTOR
+        @actors = ($row->{actor});
     } else {
-        # SI LA PELÍCULA ES LA MISMA, AGREGAMOS EL ACTOR A LA LISTA
         push @actors, $row->{actor};
     }
 }
 
-# IMPRIMIMOS LOS RESULTADOS DE LA ÚLTIMA PELÍCULA (QUE QUEDÓ FUERA DEL BUCLE)
 if ($current_movie ne "") {
-    $output .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
+    $resultados .= "<tr><td>$current_movie</td><td>" . join(", ", @actors) . "</td></tr>\n";
 }
 
-print $cgi->header(-type => "text/html", -charset => "UTF-8");
-print "<table><tr><th>Película</th><th>Actor(s)</th></tr>$output</table>";
-
-# Cerrar la conex
+# Cerrar conexión a la base de datos
 $sth->finish();
 $dbh->disconnect();
+
+# Imprimir el HTML
+print $cgi->header(-type => "text/html", -charset => "UTF-8");
+print <<HTML;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Películas del Año $year</title>
+    <link rel="stylesheet" href="../estilos.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <nav>
+                <a href="primer.pl">Actor de ID 5</a>
+                <a href="segundo.pl">Actores con ID >= 8</a>
+                <a href="tercero.pl">Películas con puntaje > 7 y votos > 5000</a>
+                <a href="../index.html">Volver al índice</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            <h1>Películas del Año $year</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Película</th>
+                        <th>Actor(es)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $resultados
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+HTML
